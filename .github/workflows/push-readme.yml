@@ -1,0 +1,32 @@
+name: Push README to docs repo
+
+on:
+  push:
+    paths:
+      - README.md     # README 바뀔 때만 실행
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout server repo
+        uses: actions/checkout@v3
+
+      - name: Clone docs repo
+        run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/seyun4047/auto-readme-test.git docs
+
+      - name: Copy README to docs repo
+        run: |
+          cp README.md docs/README.md
+
+      - name: Commit and push to docs repo
+        run: |
+          cd docs
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add README.md
+          git commit -m "Sync README from auto-readme-test-server" || echo "No changes"
+          git push
