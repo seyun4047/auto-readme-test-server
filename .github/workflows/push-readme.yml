@@ -3,7 +3,7 @@ name: Push README to docs repo
 on:
   push:
     paths:
-      - README.md     # README 바뀔 때만 실행
+      - README.md
   workflow_dispatch:
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
 
       - name: Clone docs repo
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/seyun4047/auto-readme-test.git docs
+          git clone https://x-access-token:${{ secrets.DOCS_PUSH_TOKEN }}@github.com/seyun4047/auto-readme-test.git docs
 
       - name: Copy README to docs repo
         run: |
