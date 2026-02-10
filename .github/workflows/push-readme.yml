@@ -1,32 +1,41 @@
-name: Push README to docs repo
+name: Sync README to auto-readme-test
 
 on:
   push:
+    branches:
+      - main  # 또는 master
     paths:
-      - README.md
-  workflow_dispatch:
+      - 'README.md'
 
 jobs:
-  sync:
+  sync-readme:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout server repo
-        uses: actions/checkout@v3
-
-      - name: Clone docs repo
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Sync README to target repo
+        env:
+          TARGET_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+          TARGET_REPO: seyun4047/auto-readme-test
         run: |
-          git clone https://x-access-token:${{ secrets.DOCS_PUSH_TOKEN }}@github.com/seyun4047/auto-readme-test.git docs
-
-      - name: Copy README to docs repo
-        run: |
-          cp README.md docs/README.md
-
-      - name: Commit and push to docs repo
-        run: |
-          cd docs
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add README.md
-          git commit -m "Sync README from auto-readme-test-server" || echo "No changes"
-          git push
+          # 타겟 저장소 클론
+          git clone https://x-access-token:${TARGET_TOKEN}@github.com/${TARGET_REPO}.git target-repo
+          
+          # README 복사
+          cp README.md target-repo/README.md
+          
+          # 변경사항 커밋 및 푸시
+          cd target-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet README.md; then
+            echo "No changes to README.md"
+          else
+            git add README.md
+            git commit -m "🔄 Sync README from auto-readme-test-server"
+            git push
