@@ -1,0 +1,42 @@
+name: Sync README to auto-readme-test
+
+on:
+  push:
+    branches:
+      - main  # 또는 master
+    paths:
+      - 'README.md'
+
+jobs:
+  sync-readme:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Sync README to target repo
+        env:
+          TARGET_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+          TARGET_REPO: seyun4047/auto-readme-test
+        run: |
+          # 타겟 저장소 클론
+          git clone https://x-access-token:${TARGET_TOKEN}@github.com/${TARGET_REPO}.git target-repo
+          
+          # README 복사
+          cp README.md target-repo/README.md
+          
+          # 변경사항 커밋 및 푸시
+          cd target-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet README.md; then
+            echo "No changes to README.md"
+          else
+            git add README.md
+            git commit -m "🔄 Sync README from auto-readme-test-server"
+            git push
+          fi
